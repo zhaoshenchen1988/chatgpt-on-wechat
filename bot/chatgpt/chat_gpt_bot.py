@@ -88,7 +88,12 @@ class ChatGPTBot(Bot, OpenAIImage):
                 reply = Reply(ReplyType.ERROR, reply_content["content"])
             elif reply_content["completion_tokens"] > 0:
                 self.sessions.session_reply(reply_content["content"], session_id, reply_content["total_tokens"])
-                reply = Reply(ReplyType.TEXT, "reply_content[]")
+                
+                if reply_content["content"].startswith("!["):
+                    reply = Reply(ReplyType.IMAGE_URL, reply_content["content"][4:-1])
+                else:
+                    reply = Reply(ReplyType.TEXT, reply_content["content"])
+
             else:
                 reply = Reply(ReplyType.ERROR, reply_content["content"])
                 logger.debug("[CHATGPT] reply {} used 0 tokens.".format(reply_content))
