@@ -1,0 +1,64 @@
+find . | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+
+ps -ef | grep app.py 
+kill 15645
+
+vim :wq i
+
+nohup python3.8 app.py & tail -f nohup.out 
+
+screen Ctrl-a + d
+
+sudo rpm -Uvh https://packages.microsoft.com/config/centos/7/packages-microsoft-prod.rpm
+sudo yum install dotnet-sdk-6.0
+sudo yum install aspnetcore-runtime-6.0
+
+netstat -tulnp
+sudo kill -9 20073 //强行杀死dotnet
+
+curl -X GET  http://127.0.0.1:5000/ugc/api/trace/healthcheck --max-time 10 -v
+
+rm -rf dir-name
+rm -rf /path/to/dir/name
+
+pip3 install -r requirements.txt
+
+https://doc.fastai.site/docs/development/docker/
+
+sudo docker ps
+sudo docker restart
+sudo docker stop
+sudo docker logs -f
+
+##################### 装 Docker 和 docker-compose ##################### 
+curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun
+systemctl enable --now docker
+# 安装 docker-compose
+curl -L https://github.com/docker/compose/releases/download/v2.20.3/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
+chmod +x /usr/local/bin/docker-compose
+# 验证安装
+docker -v
+docker-compose -v
+##################### ##################### ##################### 
+
+mkdir fastgpt
+cd fastgpt
+curl -O https://raw.githubusercontent.com/labring/FastGPT/main/files/deploy/fastgpt/docker-compose.yml
+curl -O https://raw.githubusercontent.com/labring/FastGPT/main/projects/app/data/config.json
+
+docker-compose up -d
+# 等待10s，OneAPI第一次总是要重启几次才能连上Mysql
+sleep 10
+# 重启一次oneapi(由于OneAPI的默认Key有点问题，不重启的话会提示找不到渠道，临时手动重启一次解决，等待作者修复)
+docker restart oneapi
+
+可以通过ip:3001访问OneAPI，默认账号为root密码为123456。
+
+在OneApi中添加合适的AI模型渠道。点击查看相关教程
+
+五、访问 FastGPT link
+目前可以通过 ip:3000 直接访问(注意防火墙)。登录用户名为 root，密码为docker-compose.yml环境变量里设置的 DEFAULT_ROOT_PSW。
+
+如果需要域名访问，请自行安装并配置 Nginx。
+
+首次运行，会自动初始化 root 用户，密码为 1234（与环境变量中的DEFAULT_ROOT_PSW一致），日志里会提示一次MongoServerError: Unable to read from a snapshot due to pending collection catalog changes;可忽略。
