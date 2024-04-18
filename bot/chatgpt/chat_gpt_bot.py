@@ -1,6 +1,7 @@
 # encoding:utf-8
 
 import time
+import re
 
 import openai
 import openai.error
@@ -98,9 +99,9 @@ class ChatGPTBot(Bot, OpenAIImage):
                 if isinstance(reply_content["content"], str):
                     reply = self._handle_fastgpt_special_reply(reply_content)
                 elif isinstance(reply_content["content"], list):
-                    print(json.dumps(reply_content["content"][0], indent=4) )
-                    content = reply_content["content"][0]["text"]
-                    reply = self._handle_fastgpt_special_reply(content)
+                    urls = self._extract_url_from_response(reply_content["content"])
+                    print(json.dumps(urls, indent=4) )
+                    reply = Reply(ReplyType.IMAGE_URL, urls[0])
 
             else:
                 reply = Reply(ReplyType.ERROR, reply_content["content"])
@@ -118,6 +119,20 @@ class ChatGPTBot(Bot, OpenAIImage):
         else:
             reply = Reply(ReplyType.ERROR, "Bot不支持处理{}类型的消息".format(context.type))
             return reply
+    # Deserialize the JSON string into Python objects
+
+
+    # Function to extract URL from response text field
+    def _extract_url_from_response(self, data):
+        urls = []
+        for item in data:
+            if 'tools' in item:
+                for tool in item['tools']:
+                    response = json.loads(tool['response'])
+                    url = re.findall(r'!\[\]\((.*?)\)', response['text'])
+                    if url:
+                        urls.extend(url)
+        return urls
 
     def _handle_fastgpt_special_reply(self, reply_content):
         """Private function to create a reply based on the content starting with ![."""
