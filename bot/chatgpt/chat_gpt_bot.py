@@ -16,6 +16,7 @@ from common.log import logger
 from common.token_bucket import TokenBucket
 from config import conf, load_config
 
+import json
 
 # OpenAI对话模型API (可用)
 class ChatGPTBot(Bot, OpenAIImage):
@@ -89,6 +90,8 @@ class ChatGPTBot(Bot, OpenAIImage):
             elif reply_content["completion_tokens"] > 0:
                 self.sessions.session_reply(reply_content["content"], session_id, reply_content["total_tokens"])
                 
+                json_string = json.dumps(reply_content["content"], indent=4)  
+                print(json_string)
                 if reply_content["content"].startswith("!["):
                     reply = Reply(ReplyType.IMAGE_URL, reply_content["content"][4:-1])
                 else:
