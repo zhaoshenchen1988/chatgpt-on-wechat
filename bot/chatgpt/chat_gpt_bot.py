@@ -92,10 +92,12 @@ class ChatGPTBot(Bot, OpenAIImage):
                 
                 json_string = json.dumps(reply_content["content"], indent=4)  
                 print(json_string)
-                if reply_content["content"].startswith("!["):
-                    reply = Reply(ReplyType.IMAGE_URL, reply_content["content"][4:-1])
-                else:
-                    reply = Reply(ReplyType.TEXT, reply_content["content"])
+
+                if isinstance(reply_content["content"], str):
+                    reply = self._handle_fastgpt_special_reply(reply_content)
+                elif isinstance(reply_content["content"], list):
+                    content = reply_content["content"][0]["text"]
+                    reply = self._handle_fastgpt_special_reply(content)
 
             else:
                 reply = Reply(ReplyType.ERROR, reply_content["content"])
@@ -113,6 +115,14 @@ class ChatGPTBot(Bot, OpenAIImage):
         else:
             reply = Reply(ReplyType.ERROR, "Bot不支持处理{}类型的消息".format(context.type))
             return reply
+
+    def _handle_fastgpt_special_reply(reply_content):
+        """Private function to create a reply based on the content starting with ![."""
+        if reply_content["content"].startswith("!["):
+            reply = Reply(ReplyType.IMAGE_URL, reply_content["content"][4:-1])
+        else:
+            reply = Reply(ReplyType.TEXT, reply_content["content"])
+        return reply
 
     def reply_text(self, session: ChatGPTSession, api_key=None, args=None, retry_count=0) -> dict:
         """
