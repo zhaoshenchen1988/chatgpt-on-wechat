@@ -116,7 +116,7 @@ class ChatGPTBot(Bot, OpenAIImage):
             reply = Reply(ReplyType.ERROR, "Bot不支持处理{}类型的消息".format(context.type))
             return reply
 
-    def _handle_fastgpt_special_reply(reply_content):
+    def _handle_fastgpt_special_reply(self, reply_content):
         """Private function to create a reply based on the content starting with ![."""
         if reply_content["content"].startswith("!["):
             reply = Reply(ReplyType.IMAGE_URL, reply_content["content"][4:-1])
