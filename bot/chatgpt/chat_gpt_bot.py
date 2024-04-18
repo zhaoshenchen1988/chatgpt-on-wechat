@@ -92,10 +92,13 @@ class ChatGPTBot(Bot, OpenAIImage):
                 
                 json_string = json.dumps(reply_content["content"], indent=4)  
                 print(json_string)
+                
+                time.sleep(1)
 
                 if isinstance(reply_content["content"], str):
                     reply = self._handle_fastgpt_special_reply(reply_content)
                 elif isinstance(reply_content["content"], list):
+                    print(json.dumps(reply_content["content"][0], indent=4) )
                     content = reply_content["content"][0]["text"]
                     reply = self._handle_fastgpt_special_reply(content)
 
