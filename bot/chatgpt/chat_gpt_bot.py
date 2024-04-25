@@ -92,16 +92,12 @@ class ChatGPTBot(Bot, OpenAIImage):
                 self.sessions.session_reply(reply_content["content"], session_id, reply_content["total_tokens"])
                 
                 json_string = json.dumps(reply_content["content"], indent=4)  
-                print(json_string)
-                
-                time.sleep(1)
+                print(json_string, flush=True)
 
                 if isinstance(reply_content["content"], str):
-                    reply = self._handle_fastgpt_special_reply(reply_content)
+                    reply = self._handle_fastgpt_pure_img_reply(reply_content)
                 elif isinstance(reply_content["content"], list):
-                    urls = self._extract_url_from_response(reply_content["content"])
-                    print(json.dumps(urls, indent=4) )
-                    reply = Reply(ReplyType.IMAGE_URL, urls[0])
+                    reply = self._extract_reply_from_tool_calling_response(reply_content["content"])
 
             else:
                 reply = Reply(ReplyType.ERROR, reply_content["content"])
@@ -123,18 +119,24 @@ class ChatGPTBot(Bot, OpenAIImage):
 
 
     # Function to extract URL from response text field
-    def _extract_url_from_response(self, data):
+    def _extract_reply_from_tool_calling_response(self, data):
         urls = []
+        replyText = False
         for item in data:
             if 'tools' in item:
                 for tool in item['tools']:
-                    response = json.loads(tool['response'])
-                    url = re.findall(r'!\[\]\((.*?)\)', response['text'])
-                    if url:
-                        urls.extend(url)
-        return urls
+                    if tool['toolName'] == "painter":
+                        response = json.loads(tool['response'])
+                        url = re.findall(r'!\[\]\((.*?)\)', response['text'])
+                        if url:
+                            return Reply(ReplyType.IMAGE_URL, url)
+                    elif tool['toolName'] == "miner":
+                        replyText = True
+            elif replyText & 'text' in item:
+                return Reply(ReplyType.TEXT, item["text"]["content"])
+        return Reply(ReplyType.ERROR, "该消息无法被解析：{}".format(json.dumps(data, indent=4) ))
 
-    def _handle_fastgpt_special_reply(self, reply_content):
+    def _handle_fastgpt_pure_img_reply(self, reply_content):
         """Private function to create a reply based on the content starting with ![."""
         if reply_content["content"].startswith("!["):
             reply = Reply(ReplyType.IMAGE_URL, reply_content["content"][4:-1])
