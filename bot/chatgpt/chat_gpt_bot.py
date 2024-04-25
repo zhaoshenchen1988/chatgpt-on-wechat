@@ -132,7 +132,7 @@ class ChatGPTBot(Bot, OpenAIImage):
                             return Reply(ReplyType.IMAGE_URL, url)
                     elif tool['toolName'] == "miner":
                         replyText = True
-            elif replyText & 'text' in item:
+            elif replyText & ('text' in item):
                 return Reply(ReplyType.TEXT, item["text"]["content"])
         return Reply(ReplyType.ERROR, "该消息无法被解析：{}".format(json.dumps(data, indent=4) ))
 
