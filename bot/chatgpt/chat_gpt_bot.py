@@ -126,8 +126,11 @@ class ChatGPTBot(Bot, OpenAIImage):
             if 'tools' in item:
                 for tool in item['tools']:
                     if tool['toolName'] == "painter":
-                        response = json.loads(tool['response'])
-                        return Reply(ReplyType.IMAGE_URL, response['text'][4:-1])                       
+                        if tool['response'] != "none":
+                            response = json.loads(tool['response'])
+                            return Reply(ReplyType.IMAGE_URL, response['text'][4:-1])  
+                        else:
+                            replyText = True                  
                     elif tool['toolName'] == "miner":
                         replyText = True
             elif replyText & ('text' in item):
